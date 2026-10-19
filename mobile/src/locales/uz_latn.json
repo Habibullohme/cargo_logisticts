@@ -1,0 +1,13 @@
+{
+  "app.title": "Yuk platformasi",
+  "home.heading": "Xush kelibsiz!",
+  "home.lead": "Bu ilova orqali tez orada yuk topish, reyslar va rasmlar bilan ishlash mumkin bo'ladi.",
+  "home.status_title": "Server holati",
+  "home.checking": "Tekshirilmoqda...",
+  "home.status_ok": "Server bilan aloqa bor",
+  "home.status_db_error": "Server ishlayapti, lekin baza bilan aloqa yo'q",
+  "home.status_error": "Server bilan aloqa yo'q",
+  "home.status_error_hint": "Telefon va kompyuter bitta Wi-Fi'da ekanini va mobile/.env dagi manzilni tekshiring.",
+  "home.server_time": "Server vaqti",
+  "home.retry": "Qayta tekshirish"
+}
