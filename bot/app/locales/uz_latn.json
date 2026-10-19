@@ -1,0 +1,7 @@
+{
+  "start.greeting": "Assalomu alaykum, {name}! 👋\n\nBu — yuk tashish platformasi boti. Tez orada shu yerda yuk yuborish va yuk topish mumkin bo'ladi.",
+  "start.server_ok": "✅ Server bilan aloqa bor.\n{message}\nServer vaqti: {time}",
+  "start.server_db_error": "⚠️ Server ishlayapti, lekin baza bilan aloqa yo'q.",
+  "start.server_error": "❌ Hozir server bilan aloqa yo'q. Birozdan keyin qayta urinib ko'ring.",
+  "start.friend": "do'stim"
+}

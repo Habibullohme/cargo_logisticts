@@ -1,0 +1,30 @@
+# Maxfiy kalitlar
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node / Next.js / Expo
+node_modules/
+.next/
+out/
+.expo/
+dist/
+web-build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Yuklangan fayllar va zaxiralar (faqat serverda)
+uploads/
+backups/
+
+# Tizim
+.DS_Store
+.idea/
+.vscode/

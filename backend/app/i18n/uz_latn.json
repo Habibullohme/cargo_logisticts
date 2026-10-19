@@ -1,0 +1,5 @@
+{
+  "health.hello": "Assalomu alaykum! Server ishlayapti.",
+  "health.db_ok": "Baza bilan aloqa bor",
+  "health.db_error": "Baza bilan aloqa yo'q"
+}
