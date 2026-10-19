@@ -1,0 +1,123 @@
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --ink: #152033;
+  --muted: #586379;
+  --line: #d3d9e3;
+  --accent: #1d5bb8;
+  --ok: #1e7a4e;
+  --ok-soft: #e1f3e9;
+  --warn: #9a6200;
+  --warn-soft: #fcf0d8;
+  --error: #b3401f;
+  --error-soft: #fbe7e0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e131b;
+    --surface: #161d28;
+    --ink: #e6ebf2;
+    --muted: #9aa6b9;
+    --line: #2a3445;
+    --accent: #79a7f0;
+    --ok: #5cc892;
+    --ok-soft: #14301f;
+    --warn: #f0b84a;
+    --warn-soft: #33280f;
+    --error: #f08a6a;
+    --error-soft: #3a1e15;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.brand {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 18px;
+}
+
+.hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(26px, 6vw, 36px);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.status {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left-width: 6px;
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.status h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.status p {
+  margin: 4px 0 0;
+}
+
+.status-line {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.status-ok {
+  border-left-color: var(--ok);
+  background: var(--ok-soft);
+}
+.status-ok .status-line {
+  color: var(--ok);
+}
+.status-warn {
+  border-left-color: var(--warn);
+  background: var(--warn-soft);
+}
+.status-warn .status-line {
+  color: var(--warn);
+}
+.status-error {
+  border-left-color: var(--error);
+  background: var(--error-soft);
+}
+.status-error .status-line {
+  color: var(--error);
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 15px;
+}

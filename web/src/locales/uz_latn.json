@@ -1,0 +1,11 @@
+{
+  "site.title": "Yuk platformasi",
+  "site.description": "Bozorlar orasida yuk yuborish va yuk topish — oson va ishonchli.",
+  "home.heading": "Yukingizni ishonchli haydovchiga topshiring",
+  "home.lead": "Yuk egasi o'zi mashina topadi, haydovchi o'zi yuk topadi. Tez orada shu yerda buyurtma berish mumkin bo'ladi.",
+  "home.status_title": "Server holati",
+  "home.status_ok": "Server bilan aloqa bor",
+  "home.status_db_error": "Server ishlayapti, lekin baza bilan aloqa yo'q",
+  "home.status_error": "Hozir server bilan aloqa yo'q",
+  "home.server_time": "Server vaqti"
+}
