@@ -1,6 +1,7 @@
 # Arxitektura — Yuk tashish platformasi
 
-> **Holati:** A-bosqich, tasdiqlash kutilmoqda.
+> **Holati:** A-bosqich tasdiqlandi (2026-10-19). Qabul qilingan qarorlar — 8-bo'limda.
+> Oddiy tildagi chizma: [Yuk platformasi sxemasi](https://claude.ai/artifact/MsEhiDeGxJqgwGbjPJmUhD).
 > Bu fayl keyingi barcha bosqichlar uchun asos. Arxitekturada biror narsa o'zgarsa, avval shu fayl yangilanadi, keyin kod.
 
 ## Mundarija
@@ -13,7 +14,7 @@
 5. [Papka tuzilmasi](#5-papka-tuzilmasi)
 6. [Deploy sxemasi va zaxira](#6-deploy-sxemasi-va-zaxira)
 7. [Muhim texnik qoidalar](#7-muhim-texnik-qoidalar)
-8. [Ochiq savollar (javobingiz kerak)](#8-ochiq-savollar-javobingiz-kerak)
+8. [Qabul qilingan qarorlar](#8-qabul-qilingan-qarorlar)
 
 ---
 
@@ -79,7 +80,7 @@ flowchart TB
     PUSHSVC --> MOBILE
 ```
 
-**Tushuntirish.** Uchta mijoz (bot, sayt, ilova) hech qachon bazaga to'g'ridan-to'g'ri ulanmaydi — hammasi bitta **Backend API** orqali ishlaydi, shuning uchun narx hisoblash yoki holat o'zgartirish qoidasi bir marta yoziladi. Bildirishnomalar ham bitta joyda: API "kimga, nima" yuborishni bazadagi navbatga yozadi, **worker** esa uni Telegram yoki push orqali yuboradi (internet uzilsa — qayta urinadi). Ma'lumotlar (baza va rasmlar) faqat O'zbekistondagi serverimizda turadi; Telegram va push xizmati faqat qisqa xabarni yetkazuvchi "pochtachi" vazifasida (8-bo'limdagi 5-savolga qarang).
+**Tushuntirish.** Uchta mijoz (bot, sayt, ilova) hech qachon bazaga to'g'ridan-to'g'ri ulanmaydi — hammasi bitta **Backend API** orqali ishlaydi, shuning uchun narx hisoblash yoki holat o'zgartirish qoidasi bir marta yoziladi. Bildirishnomalar ham bitta joyda: API "kimga, nima" yuborishni bazadagi navbatga yozadi, **worker** esa uni Telegram yoki push orqali yuboradi (internet uzilsa — qayta urinadi). Ma'lumotlar (baza va rasmlar) faqat O'zbekistondagi serverimizda turadi; Telegram va push xizmati faqat qisqa xabarni yetkazuvchi "pochtachi" vazifasida (8-bo'lim, 5-band).
 
 ---
 
@@ -277,7 +278,8 @@ erDiagram
         bigint to_drop_point_id FK
         bigint cargo_type_id FK
         int units_declared "yuboruvchi aytgan son"
-        int units_confirmed "haydovchi olganda sanagan son"
+        int units_reported "haydovchi olganda sanagan son"
+        int units_confirmed "ikki tomon kelishgan son (narx shundan)"
         bigint declared_value_sum "taxminiy qiymat"
         string receiver_name
         string receiver_phone "+998..."
@@ -427,7 +429,8 @@ stateDiagram-v2
     yangi --> haydovchi_tayinlandi : Haydovchi taklifni qabul qiladi (yoki admin tayinlaydi)
     haydovchi_tayinlandi --> yangi : Haydovchi voz kechadi, yuk olinmasdan reys ketdi
 
-    haydovchi_tayinlandi --> yuk_olindi : Haydovchi rasm + joy sonini kiritadi
+    haydovchi_tayinlandi --> yuk_olindi : Haydovchi rasm + son, son mos (yoki yuboruvchi yangi sonni tasdiqladi)
+    haydovchi_tayinlandi --> bahs : Son mos emas, yuboruvchi rozi emas
     yuk_olindi --> yolda : Haydovchi "Yo'lga chiqdim" bosadi
     yolda --> yetkazildi : Haydovchi rasm + qabul qiluvchi kodi
     yetkazildi --> yakunlandi : Qabul qiluvchi tasdiqlaydi yoki 24 soatdan keyin tizim
@@ -453,7 +456,8 @@ Kim qaysi o'tishni qila oladi:
 |---|---|---|
 | `yangi` → `haydovchi_tayinlandi` | Haydovchi (taklifni qabul qiladi), admin | Haydovchi `tasdiqlangan`, reysda bo'sh joy yetarli |
 | `haydovchi_tayinlandi` → `yangi` | Haydovchi, tizim | Haydovchi voz kechsa yoki reys yo'lga chiqib, bu yuk olinmagan bo'lsa; yuboruvchiga xabar |
-| `haydovchi_tayinlandi` → `yuk_olindi` | Haydovchi | Kamida 1 ta rasm + sanagan joy soni. Son farq qilsa — ogohlantirish. Yuboruvchi "Tasdiqlayman" bosadi (`sender_confirmed_pickup_at`) |
+| `haydovchi_tayinlandi` → `yuk_olindi` | Haydovchi (+ yuboruvchi, son farq qilsa) | Kamida 1 ta rasm + sanagan son (`units_reported`). Son e'lon qilingan bilan **bir xil** bo'lsa — darhol o'tadi. Farq qilsa — buyurtma joyida turadi, yuboruvchi yangi sonni tasdiqlamaguncha o'tmaydi (avtomatik tasdiq yo'q); tasdiqlasa narx shu son bo'yicha qayta hisoblanadi |
+| `haydovchi_tayinlandi` → `bahs` | Yuboruvchi | Haydovchi sanagan songa rozi bo'lmasa |
 | `yuk_olindi` → `yolda` | Haydovchi | Reys bo'yicha bitta tugma: reysdagi barcha olingan yuklar birdan `yolda` bo'ladi, joylashuv kuzatish boshlanadi |
 | `yolda` → `yetkazildi` | Haydovchi | Kamida 1 ta rasm + to'g'ri 4 xonali kod. 5 marta xato kiritilsa — kod bloklanadi, admin aralashadi |
 | `yetkazildi` → `yakunlandi` | Qabul qiluvchi, tizim (24 soatdan keyin), admin | Bahs ochilmagan bo'lsa. Shundan keyin baho so'raladi |
@@ -536,11 +540,15 @@ sequenceDiagram
     W-->>S: Haydovchi: ism, mashina raqami, reyting, telefon
     W-->>D: Tushirish joyi lokatsiyasi (xarita / Telegram lokatsiya)
 
-    D->>API: POST /orders/{id}/pickup (rasm, 12 ta)
-    API->>DB: yuk_olindi, units_confirmed = 12
-    W-->>S: "Yuk olindi, tasdiqlang"
+    D->>API: POST /orders/{id}/pickup (rasm, sanagan son)
+    alt Son e'lon qilingan bilan bir xil (12 = 12)
+        API->>DB: yuk_olindi, units_confirmed = 12
+    else Son farq qiladi (12 ≠ 11)
+        W-->>S: "Haydovchi 11 ta sanadi. Tasdiqlaysizmi?"
+        S->>API: POST /orders/{id}/confirm-count (ha) yoki "Muammo bor"
+        API->>DB: ha bo'lsa: yuk_olindi, units_confirmed = 11, narx qayta hisoblanadi
+    end
     W-->>R: "Yukingiz mashinaga ortildi: 12 ta"
-    S->>API: POST /orders/{id}/confirm-pickup
 
     D->>API: POST /trips/{id}/depart ("Yo'lga chiqdim")
     API->>DB: Reys va yuklari → yolda
@@ -718,7 +726,7 @@ Boshida bot Telegram'dan yangilanishlarni **long polling** bilan oladi (domen va
 
 **Ma'lumotlar O'zbekistonda**
 - Baza va barcha fayllar faqat bizning O'zbekistondagi serverda. Supabase, Firebase (ma'lumot saqlash), AWS va boshqa xorijiy bulutlar ishlatilmaydi.
-- Telegram va push xabarlarida shaxsiy ma'lumot minimal: masalan, *"Y-250117-0042 yukingiz yetkazildi"*. Batafsil ma'lumot (telefon, ism) faqat bizning API'dan ilova yoki bot ichida olinadi. (8-bo'limdagi 5-savol.)
+- Telegram va push xabarlarida shaxsiy ma'lumot minimal: masalan, *"Y-250117-0042 yukingiz yetkazildi"*. Batafsil ma'lumot (telefon, ism) faqat bizning API'dan ilova yoki bot ichida olinadi. (8-bo'lim, 5-band.)
 
 **Xavfsizlik**
 - Hujjat rasmlari (`visibility = private_admin`) faqat adminlarga, yuk rasmlari faqat buyurtma tomonlariga; fayllar ochiq papkadan emas, ruxsatni tekshiradigan API orqali (yoki qisqa muddatli imzolangan havola bilan) beriladi.
@@ -747,23 +755,15 @@ Boshida bot Telegram'dan yangilanishlarni **long polling** bilan oladi (domen va
 
 ---
 
-## 8. Ochiq savollar (javobingiz kerak)
+## 8. Qabul qilingan qarorlar
 
-Quyidagilarni taxmin qilmadim, chunki ular biznes qaroringiz. Har biriga mening taklifim yozilgan — "ha" desangiz, shunday qilaman.
+A-bosqichda Habibullo bilan kelishildi (2026-10-19):
 
-1. **Qaytish tarifi qanday qo'llanadi?** Yuboruvchi buyurtma berayotganda reys hali noma'lum.
-   *Taklif:* buyurtma standart narx bilan ochiladi; agar u qaytish reysiga (`is_return = true`) tushsa, narx avtomatik arzon tarifga tushadi va yuboruvchiga xabar boriladi. Narx hech qachon oshmaydi.
-2. **Qop va korobka narxi bir xilmi?** Hozircha sxemada bitta "joy" (qop yoki korobka) narxi bor.
-   *Taklif:* boshida bir xil; farq kerak bo'lsa, tarifga `unit_type` qo'shamiz.
-3. **Yuk olishda son farq qilsa nima bo'ladi?** Masalan, yuboruvchi 12 dedi, haydovchi 11 sanadi.
-   *Taklif:* narx haydovchi tasdiqlagan son bo'yicha qayta hisoblanadi, yuboruvchi "Tasdiqlayman" yoki "Muammo bor" tugmasini bosadi; bosmasa 2 soatdan keyin avtomatik tasdiqlangan hisoblanadi. Yuboruvchi tasdig'i holatni to'xtatib turmaydi (haydovchi kutib qolmasin).
-4. **`yetkazildi` → `yakunlandi` qachon?**
-   *Taklif:* qabul qiluvchi "Oldim" bossa darhol, aks holda 24 soatdan keyin avtomatik (shu 24 soat ichida bahs ochish mumkin).
-5. **Telegram va push xorijiy kanallar.** Telegram serverlari ham, Android push (Google FCM) ham O'zbekistonda emas — ularsiz bot va push umuman ishlamaydi.
-   *Taklif:* ma'lumotlar bazasi to'liq O'zbekistonda; Telegram/push orqali faqat qisqa, shaxsiy ma'lumotsiz matn yuboriladi (7-bo'lim). Huquqiy jihatdan yuristga bir marta ko'rsatib olishni maslahat beraman.
-6. **Xarita.** Saytda va ilovada xaritani nima bilan ko'rsatamiz?
-   *Taklif:* boshida **OpenStreetMap** (bepul, saytda Leaflet kutubxonasi). O'zbekistonda Yandex xaritalari aniqroq bo'lishi mumkin, lekin kalit va limitlar kerak — keyin almashtirish oson bo'ladigan qilib yozaman. "Navigatorda ochish" tugmasi Yandex Navigator / Google Maps havolasini ochadi.
-7. **Fon ishlari uchun Redis kerakmi?**
-   *Taklif:* hozircha yo'q — navbat PostgreSQL jadvalida (`NOTIFICATIONS`), worker uni o'qiydi. Kamroq server qismi, kamroq tashvish.
-8. **Bekor qilish qoidasi.** Yuk olingandan keyin yuboruvchi bekor qila olmasligi (faqat admin orqali) to'g'rimi?
-   *Taklif:* ha, chunki yuk allaqachon mashinada.
+1. **Qaytish tarifi.** Buyurtma standart narx bilan ochiladi; qaytish reysiga (`is_return = true`) tushsa, narx avtomatik arzon tarifga tushadi va yuboruvchiga xabar boradi. Narx hech qachon oshmaydi.
+2. **Qop/korobka narxi.** Boshida bitta "joy" narxi (qop va korobka bir xil). Farq kerak bo'lsa, tarifga `unit_type` qo'shiladi.
+3. **Yuk olishda son.** Ikki tomon bir xil sonni tasdiqlamaguncha buyurtma `yuk_olindi` bo'lmaydi. Avtomatik tasdiq **yo'q**. Narx kelishilgan son (`units_confirmed`) bo'yicha. Yuboruvchi rozi bo'lmasa — `bahs`.
+4. **Yakunlash.** Qabul qiluvchi "Oldim" bossa darhol, aks holda `yetkazildi` dan 24 soat o'tib avtomatik `yakunlandi`.
+5. **Telegram va push.** Baza to'liq O'zbekistonda; Telegram/push orqali faqat qisqa, shaxsiy ma'lumotsiz matn. Yuristga bir marta ko'rsatish tavsiya etiladi.
+6. **Xarita.** Saytda OpenStreetMap (Leaflet). "Navigatorda ochish" — Google Maps / Yandex Navigator havolasi (bepul). Mobil ilova ichidagi xarita 4.5-bosqichda tanlanadi (Android'da Google xaritasi bepul). Xarita qismi almashtirish oson bo'ladigan qilib yoziladi.
+7. **Redis yo'q.** Navbat PostgreSQL'dagi `NOTIFICATIONS` jadvalida, worker uni o'qiydi.
+8. **Bekor qilish.** Yuk olinguncha — yuboruvchi yoki admin; yuk olingandan keyin — faqat admin.

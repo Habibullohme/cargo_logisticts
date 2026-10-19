@@ -188,7 +188,7 @@ A-bosqichdan (arxitektura) boshla.
 
 ## Loyiha holati (har bosqichdan keyin yangilanadi)
 
-- [ ] **A-bosqich — Arxitektura:** `docs/architecture.md` yozildi, Habibullo tasdiqlashi kutilmoqda. Ochiq savollar shu faylning 8-bo'limida.
+- [x] **A-bosqich — Arxitektura:** tasdiqlandi (2026-10-19). Qarorlar — `docs/architecture.md`, 8-bo'lim.
 - [ ] 0-bosqich
 - [ ] 1-bosqich
 - [ ] 2-bosqich
