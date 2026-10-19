@@ -189,7 +189,7 @@ A-bosqichdan (arxitektura) boshla.
 ## Loyiha holati (har bosqichdan keyin yangilanadi)
 
 - [x] **A-bosqich — Arxitektura:** tasdiqlandi (2026-10-19). Qarorlar — `docs/architecture.md`, 8-bo'lim.
-- [ ] 0-bosqich
+- [x] **0-bosqich:** monorepo, Docker Compose (db + backend + bot), `/api/v1/health`, bot `/start`, sayt bosh sahifasi, Expo ilova. Habibullo o'z kompyuterida sinab ko'rishi kutilmoqda.
 - [ ] 1-bosqich
 - [ ] 2-bosqich
 - [ ] 3-bosqich
